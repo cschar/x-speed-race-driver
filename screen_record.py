@@ -282,28 +282,33 @@ def screen_record():
         cv2.imshow('=Original Image', original_image)
         
         
+        #Calculate driving decision
         if m1 < 0 and m2 < 0:
             direction = right
         elif m1 > 0 and m2 > 0:
             direction = left
         else:
             direction = straight
-
         drive_votes[direction] += 1
-
-        if drive:
-            for key, value in drive_votes.items():
-                print("drive vote {} --> {}".format(key.__name__, value))
+        decision_string = "S [{}] R [{}] L [{}]".format(drive_votes[straight],
+        drive_votes[right], drive_votes[left])
+        
+        t2 = time.time() - t
+        print('[{:4.3f}][{:13}] m1 {:6.4f}  m2 {:6.4f}'.format(t2, decision_string, m1, m2))
+        
+        #Drive
+        if drive and (t - drive_time) > 2.5:
             winner = max(drive_votes, key=drive_votes.get)  
-            if (t - drive_time) > 2.5:  # drive every 2 seconds
-                print('driving! {}'.format(winner.__name__))
-                # direction()
-                winner()
-                drive_time = time.time()
-                drive_votes = defaultdict(int)
+            
+           
+            t3 = time.time()
+            winner()
+            t4 = time.time() - t3
+            print('driving! {}   {:5.4}s'.format(winner.__name__, t4))
 
-        print('[{:10}] m1 {:6.4f}  m2 {:6.4f}'.format(direction.__name__, m1, m2))
-
+            drive_time = time.time()
+            drive_votes = defaultdict(int)
+        
 
         # print('fps: {}'.format(1/(time.time()-t)))
         key = cv2.waitKey(25)
